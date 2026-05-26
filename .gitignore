@@ -1,0 +1,105 @@
+# ─────────────────────────────────────────────
+# Root Monorepo .gitignore
+# Ecommerce Microservice Platform
+# ─────────────────────────────────────────────
+
+# ── Dependencies ──────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ── Build Outputs ─────────────────────────────
+dist/
+build/
+out/
+.next/
+.nuxt/
+.output/
+
+# ── Environment Variables ──────────────────────
+.env
+.env.local
+.env.development
+.env.staging
+.env.production
+.env.*.local
+!.env.example
+!.env.*.example
+
+# ── Logs ──────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ── Database ───────────────────────────────────
+*.sqlite
+*.sqlite3
+*.db
+
+# ── Docker ─────────────────────────────────────
+# (Keep docker-compose files, ignore local overrides)
+docker-compose.override.yml
+docker-compose.local.yml
+
+# ── Kubernetes ─────────────────────────────────
+# (Keep k8s manifests, ignore secrets)
+k8s/secrets/
+*.secret.yaml
+*.secret.yml
+
+# ── CI/CD ──────────────────────────────────────
+.github/secrets/
+
+# ── OS Generated ───────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ── IDE & Editors ──────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# ── TypeScript ─────────────────────────────────
+*.tsbuildinfo
+
+# ── Testing ────────────────────────────────────
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+
+# ── Package Managers ───────────────────────────
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# ── Misc ───────────────────────────────────────
+*.pem
+*.key
+*.cert
+*.crt
+.cache/
+tmp/
+temp/
