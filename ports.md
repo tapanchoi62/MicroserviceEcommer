@@ -106,17 +106,152 @@ Tổng hợp tất cả port dùng khi chạy local (NODE_ENV=development).
 
 ---
 
-## 🐳 Docker Compose — Khởi động hạ tầng local
+## 🐳 Docker — Hướng dẫn khởi động & build để chạy full code
+
+### Yêu cầu
+
+| Tool | Phiên bản tối thiểu |
+| ---- | ------------------- |
+| Docker Desktop | 24+ |
+| Docker Compose | v2 (tích hợp sẵn trong Docker Desktop) |
+| Node.js | 20+ (chỉ cần khi chạy service ở chế độ local) |
+
+---
+
+### 🅐 Chế độ Dev thông thường (Infra bằng Docker + Service chạy local)
+
+> **Phù hợp nhất khi đang phát triển** — infra (DB, Redis, Kafka, …) chạy trong container, còn NestJS service chạy trực tiếp trên máy để hot-reload.
+
+#### Bước 1 — Khởi động toàn bộ infrastructure
 
 ```bash
-# Khởi động tất cả infrastructure
+# Từ thư mục gốc project
 docker-compose -f docker-compose.infra.yml up -d
+```
 
-# Chỉ auth-service
-docker-compose -f services/auth-service/docker-compose.yml up -d
+Lệnh này khởi động:
+- 7 × PostgreSQL (mỗi service 1 DB, port 5432–5438)
+- Redis (port 6379)
+- Zookeeper + Kafka (port 2181, 9092, 29092)
+- Elasticsearch + Kibana (port 9200, 5601)
+- pgAdmin, Kafka UI, Redis Insight (port 5050, 8080, 8001)
 
-# Kiểm tra status
+#### Bước 2 — Kiểm tra container đã healthy
+
+```bash
 docker ps
+# Tất cả cột STATUS phải là "Up" hoặc "healthy"
+```
+
+#### Bước 3 — Setup database cho từng service (chạy 1 lần)
+
+```bash
+cd services/auth-service
+npm install
+npm run prisma:migrate    # tạo bảng
+npm run prisma:seed       # seed roles/permissions mặc định
+```
+
+#### Bước 4 — Chạy service ở chế độ dev (hot-reload)
+
+```bash
+# Mở terminal riêng cho mỗi service
+cd services/auth-service && npm run start:dev
+```
+
+---
+
+### 🅑 Chế độ Docker hoàn toàn — Build & chạy auth-service trong container
+
+> Dùng khi cần test production build hoặc không muốn cài Node.js trên máy.
+
+#### Build image và khởi động (auth-service + DB + Redis riêng)
+
+```bash
+cd services/auth-service
+
+# Build image và khởi động tất cả (auth-service + postgres + redis)
+docker-compose up -d --build
+
+# Hoặc chỉ build image, không chạy
+docker-compose build
+```
+
+#### Chạy Prisma migrate bên trong container (sau khi container up)
+
+```bash
+docker-compose exec auth-service npx prisma migrate deploy
+docker-compose exec auth-service npx prisma db seed
+```
+
+#### Xem log
+
+```bash
+docker-compose logs -f auth-service
+```
+
+---
+
+### 🅒 Rebuild khi thay đổi code
+
+```bash
+# Rebuild 1 service cụ thể (không restart các container khác)
+cd services/auth-service
+docker-compose up -d --build auth-service
+
+# Hoặc từ thư mục gốc
+docker-compose -f services/auth-service/docker-compose.yml up -d --build
+```
+
+---
+
+### 🛑 Dừng & dọn dẹp
+
+```bash
+# Dừng infra (giữ nguyên volumes/data)
+docker-compose -f docker-compose.infra.yml down
+
+# Dừng và XÓA toàn bộ data (volumes)
+docker-compose -f docker-compose.infra.yml down -v
+
+# Dừng auth-service container
+cd services/auth-service && docker-compose down
+
+# Xóa toàn bộ image đã build
+docker-compose -f services/auth-service/docker-compose.yml down --rmi all
+```
+
+---
+
+### 🔁 Thứ tự khởi động đúng (tránh lỗi connection)
+
+```
+1. docker-compose.infra.yml up -d          ← Infra (DB, Redis, Kafka, ...)
+2. Chờ tất cả container báo "healthy"
+3. npm run prisma:migrate  (mỗi service)   ← Tạo schema DB
+4. npm run prisma:seed     (mỗi service)   ← Seed dữ liệu ban đầu
+5. npm run start:dev       (mỗi service)   ← Khởi động NestJS
+```
+
+---
+
+### 🔍 Lệnh Docker hữu ích
+
+```bash
+# Xem tất cả container đang chạy
+docker ps
+
+# Xem log realtime của 1 container
+docker logs -f <container_name>
+
+# Vào shell bên trong container
+docker exec -it <container_name> sh
+
+# Xem tài nguyên CPU/RAM từng container
+docker stats
+
+# Xóa toàn bộ container/image/volume không dùng
+docker system prune -a --volumes
 ```
 
 ---
