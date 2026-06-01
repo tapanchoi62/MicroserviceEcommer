@@ -59,7 +59,7 @@ docker-compose -f docker-compose.infra.yml up -d
 ### Start a single service's infra only
 
 ```bash
-docker-compose -f services/auth-service/docker-compose.yml up -d
+docker-compose -f services/auth/auth-service/docker-compose.yml up -d
 ```
 
 Each service has its own `docker-compose.yml` that spins up its private PostgreSQL + Redis.
@@ -112,7 +112,7 @@ Swagger docs for every service: `http://localhost:<port>/api/docs`
 
 ---
 
-## Auth Service (`services/auth-service/`)
+## Auth Service (`services/auth/auth-service/`)
 
 The only service currently implemented. Reference implementation for all other services.
 

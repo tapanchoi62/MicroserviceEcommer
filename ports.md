@@ -146,7 +146,7 @@ docker ps
 #### Bước 3 — Setup database cho từng service (chạy 1 lần)
 
 ```bash
-cd services/auth-service
+cd services/auth/auth-service
 npm install
 npm run prisma:migrate    # tạo bảng
 npm run prisma:seed       # seed roles/permissions mặc định
@@ -156,7 +156,7 @@ npm run prisma:seed       # seed roles/permissions mặc định
 
 ```bash
 # Mở terminal riêng cho mỗi service
-cd services/auth-service && npm run start:dev
+cd services/auth/auth-service && npm run start:dev
 ```
 
 ---
@@ -168,7 +168,7 @@ cd services/auth-service && npm run start:dev
 #### Build image và khởi động (auth-service + DB + Redis riêng)
 
 ```bash
-cd services/auth-service
+cd services/auth/auth-service
 
 # Build image và khởi động tất cả (auth-service + postgres + redis)
 docker-compose up -d --build
@@ -196,11 +196,11 @@ docker-compose logs -f auth-service
 
 ```bash
 # Rebuild 1 service cụ thể (không restart các container khác)
-cd services/auth-service
+cd services/auth/auth-service
 docker-compose up -d --build auth-service
 
 # Hoặc từ thư mục gốc
-docker-compose -f services/auth-service/docker-compose.yml up -d --build
+docker-compose -f services/auth/auth-service/docker-compose.yml up -d --build
 ```
 
 ---
@@ -215,10 +215,10 @@ docker-compose -f docker-compose.infra.yml down
 docker-compose -f docker-compose.infra.yml down -v
 
 # Dừng auth-service container
-cd services/auth-service && docker-compose down
+cd services/auth/auth-service && docker-compose down
 
 # Xóa toàn bộ image đã build
-docker-compose -f services/auth-service/docker-compose.yml down --rmi all
+docker-compose -f services/auth/auth-service/docker-compose.yml down --rmi all
 ```
 
 ---
@@ -260,7 +260,7 @@ docker system prune -a --volumes
 
 | Service              | ENV File                                    |
 | -------------------- | ------------------------------------------- |
-| Auth Service         | `services/auth-service/.env`                |
+| Auth Service         | `services/auth/auth-service/.env`                |
 | Product Service      | `services/product-service/.env`             |
 | Order Service        | `services/order-service/.env`               |
 | Inventory Service    | `services/inventory-service/.env`           |
