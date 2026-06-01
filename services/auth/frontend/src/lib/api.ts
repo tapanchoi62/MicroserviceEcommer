@@ -1,5 +1,6 @@
 const BASE_URL  = process.env.NEXT_PUBLIC_AUTH_API_URL  || 'http://localhost:3001/api/v1/auth';
 const ADMIN_BASE = process.env.NEXT_PUBLIC_ADMIN_API_BASE || 'http://localhost:3001/api/v1';
+const PRODUCT_BASE = process.env.NEXT_PUBLIC_PRODUCT_API_BASE || 'http://localhost:3002/api/v1';
 
 // ─── Token helpers ────────────────────────────────────────────────────────────
 export const tokenStorage = {
@@ -223,4 +224,121 @@ export const authApi = {
 
   revokeSession: (sessionId: string) =>
     apiFetch<void>(`/sessions/${sessionId}`, { method: 'DELETE' }),
+};
+
+// ─── Product API types ────────────────────────────────────────────────────────
+export interface Brand {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Category {
+  id: string;
+  parentId: string | null;
+  name: string;
+  slug: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProductVariant {
+  id: string;
+  productId: string;
+  sku: string;
+  barcode: string | null;
+  price: string;
+  comparePrice: string | null;
+  weight: string | null;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+  variantAttributes: Array<{
+    id: string;
+    variantId: string;
+    attributeName: string;
+    attributeValue: string;
+  }>;
+}
+
+export interface ProductImage {
+  id: string;
+  productId: string;
+  imageUrl: string;
+  sortOrder: number;
+  isThumbnail: boolean;
+  createdAt: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  brandId: string | null;
+  status: string;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  brand: Brand | null;
+  productCategories: Array<{
+    productId: string;
+    categoryId: string;
+    category: Category;
+  }>;
+  variants: ProductVariant[];
+  images: ProductImage[];
+}
+
+export interface ProductsResponse {
+  data: Product[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface ProductsParams {
+  page?: number;
+  pageSize?: number;
+  keyword?: string;
+  brandId?: string;
+  categoryId?: string;
+  status?: string;
+}
+
+// ─── Product API calls ────────────────────────────────────────────────────────
+function productFetch<T>(path: string, options?: RequestInit) {
+  return apiFetch<T>(path, options ?? {}, true, PRODUCT_BASE);
+}
+
+export const productApi = {
+  getProducts: (params: ProductsParams = {}): Promise<ProductsResponse> => {
+    const qs = new URLSearchParams();
+    if (params.page) qs.set('page', String(params.page));
+    if (params.pageSize) qs.set('pageSize', String(params.pageSize));
+    if (params.keyword) qs.set('keyword', params.keyword);
+    if (params.brandId) qs.set('brandId', params.brandId);
+    if (params.categoryId) qs.set('categoryId', params.categoryId);
+    if (params.status) qs.set('status', params.status);
+    const query = qs.toString() ? `?${qs.toString()}` : '';
+    return productFetch<ProductsResponse>(`/products${query}`);
+  },
+
+  getProductById: (id: string): Promise<Product> =>
+    productFetch<Product>(`/products/${id}`),
+
+  getBrands: (): Promise<Brand[]> =>
+    productFetch<Brand[]>('/brands'),
+
+  getCategories: (): Promise<Category[]> =>
+    productFetch<Category[]>('/categories'),
+
+  searchProducts: (query: string, page = 1, pageSize = 20): Promise<ProductsResponse> =>
+    productFetch<ProductsResponse>(`/search/products?q=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}`),
 };

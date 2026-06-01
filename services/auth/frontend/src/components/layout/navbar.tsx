@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShoppingBag, User, Monitor, LogOut, Users } from 'lucide-react';
+import { ShoppingBag, User, Monitor, LogOut, Users, Package } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const baseLinks = [
+  { href: '/products', label: 'Products', icon: Package, adminOnly: false },
   { href: '/profile',  label: 'Profile',  icon: User,    adminOnly: false },
   { href: '/sessions', label: 'Sessions', icon: Monitor,  adminOnly: false },
   { href: '/admin/members', label: 'Members', icon: Users, adminOnly: true  },
